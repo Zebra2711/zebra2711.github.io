@@ -1,9 +1,655 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disc Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .container { max-width: 1200px; }
+        .disc-select-option {
+            display: flex;
+            align-items: center;
+            padding: 4px;
+        }
+        .disc-select-option img {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+        #discInfoSection {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            background-color: #1f2937;
+            border-radius: 0.5rem;
+            border: 1px solid #374151;
+        }
+        #discInfoSection img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+        }
+        
+        /* scrollbar dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+    <div class="container mx-auto p-6">
+        <div class="flex items-center justify-center mb-6">
+            <img src="imgs/zzz_DriveDisc.webp" alt="Disc Icon" class="h-30 w-30 mr-2">
+            <h1 class="text-3xl font-bold text-gray-100">Disc Generator</h1>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-700">
+                <h2 class="text-xl font-semibold mb-4 text-gray-200">Configuration</h2>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Disc Name</label>
+                    <select id="discSelect" class="w-full p-2 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-400 bg-gray-700 text-gray-100">
+                        <option value="">Select Disc</option>
+                    </select>
+                    <!-- Add new disc info section -->
+                    <div id="discInfoSection" style="display: none;">
+                        <img id="selectedDiscIcon" src="" alt="Selected Disc" class="rounded-md">
+                        <div id="discInfo" class="flex-1">
+                            <h3 class="font-medium text-gray-100" id="selectedDiscName"></h3>
+                            <p class="text-sm text-gray-400" id="selectedDiscId"></p>
+                            <!-- Additional info can be added here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Slot</label>
+                        <select id="slotInput" 
+                                class="w-full p-2 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-400 bg-gray-700 text-gray-100">
+                            <option value="1">Slot 1</option>
+                            <option value="2">Slot 2</option>
+                            <option value="3">Slot 3</option>
+                            <option value="4">Slot 4</option>
+                            <option value="5">Slot 5</option>
+                            <option value="6">Slot 6</option>
+                        </select>
+                        <p class="text-xs text-gray-400 mt-1">Slot determines main stat and available sub stats</p>
+                    </div>
 
-<body>
-  <h1>YOUR NAME</h1>
-  <p>Welcome to my website!</p>
-  <img src="https://content.codecademy.com/articles/github-pages-via-web-app/happy-ice-cream.gif" />
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Main Property</label>
+                        <select id="mainPropertySelect" 
+                                class="w-full p-2 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-400 bg-gray-700 text-gray-100">
+                            <option value="">Select Main Property</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        Sub Properties (Total Level: <span id="totalLevel">4</span>)
+                    </label>
+                    <div id="subPropertiesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+                </div>
+                <button id="generateBtn" 
+                        class="w-full bg-gray-500 text-white py-2 px-4 rounded-md cursor-not-allowed transition duration-200 font-medium"
+                        disabled>
+                    Generate
+                </button>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-700 flex flex-col">
+                <h2 class="text-xl font-semibold mb-4 text-gray-200">Generated config</h2>
+                <textarea id="outputText" readonly
+                          class="flex-1 w-full p-4 border border-gray-600 rounded-md bg-gray-900 text-gray-100 font-mono text-sm focus:ring-2 focus:ring-blue-400"
+                          placeholder="Generated code will appear here..."></textarea>
+
+                <button id="copyBtn" style="display: none;"
+                        class="mt-4 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200 font-medium">
+                    Copy to Clipboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dicsSet = {
+            "Woodpecker Electro": 310,
+            "Puffer Electro": 311,
+            "Shockstar Disco": 312,
+            "Freedom Blues": 313,
+            "Hormone Punk": 314,
+            "Soul Rock": 315,
+            "Swing Jazz": 316,
+            "Chaos Jazz": 318,
+            "Proto Punk": 319,
+            "Inferno Metal": 322,
+            "Chaotic Metal": 323,
+            "Thunder Metal": 324,
+            "Polar Metal": 325,
+            "Fanged Metal": 326,
+            "Branch & Blade Song": 327,
+            "Astral Voice": 328,
+            "Shadow Harmony": 329,
+            "Phaethon's Melody": 330,
+            "Yunkui Tales": 331,
+            "King of the Summit": 332,
+            "Dawn's Bloom": 333,
+            "Moonlight Lullaby": 334,
+        };
+
+        const discIcons = {
+            "Woodpecker Electro": "imgs/SuitWoodpeckerElectro.webp",
+            "Puffer Electro": "imgs/SuitPufferElectro.webp",
+            "Shockstar Disco": "imgs/SuitShockstarDisco.webp",
+            "Freedom Blues": "imgs/SuitFreedomBlues.webp",
+            "Hormone Punk": "imgs/SuitHormonePunk.webp",
+            "Soul Rock": "imgs/SuitSoulRock.webp",
+            "Swing Jazz": "imgs/SuitSwingJazz.webp",
+            "Chaos Jazz": "imgs/SuitChaosJazz.webp",
+            "Proto Punk": "imgs/SuitProtoPunk.webp",
+            "Inferno Metal": "imgs/SuitInfernoMetal.webp",
+            "Chaotic Metal": "imgs/SuitChaosMetal.webp",
+            "Thunder Metal": "imgs/SuitThunderMetal.webp",
+            "Polar Metal": "imgs/SuitPolarMetal.webp",
+            "Fanged Metal": "imgs/SuitFangedMetal.webp",
+            "Branch & Blade Song": "imgs/SuitBranch.webp",
+            "Astral Voice": "imgs/SuitAstralVoice.webp",
+            "Shadow Harmony": "imgs/SuitShadow.webp",
+            "Phaethon's Melody": "imgs/SuitSavior.webp",
+            "Yunkui Tales": "imgs/SuitYunkuiTales.webp",
+            "King of the Summit": "imgs/SuitKingoftheSummit.webp",
+            "Dawn's Bloom": "imgs/SuitDawnsBloom.webp",
+            "Moonlight Lullaby": "imgs/SuitMoonlightLullaby.webp",
+        };
+
+        const dicsPropertyTypeId = {
+            "HP": 11103,
+            "%HP": 11102,
+            "ATK": 12103,
+            "%ATK": 12102,
+            "DEF": 13103,
+            "%DEF": 13102,
+            "PEN": 23203,
+            "%PEN": 23103,
+            "AM": 31402,
+            "AP": 31203,
+            "%CrD": 21103,
+            "%CrR": 20103,
+            "%ER": 30502,
+            "Impact": 12202,
+            "Electro": 31803,
+            "Ether": 31903,
+            "Fire": 31603,
+            "Ice": 31703,
+            "Physic": 31503
+        };
+
+        const dicsPropertyType = {
+            11103: [1, 550, 112],
+            11102: [7, 750, 300],
+            12103: [2, 79, 19],
+            12102: [7, 750, 300],
+            13103: [3, 46, 15],
+            13102: [7, 1200, 480],
+            23203: [0, 0, 9],
+            23103: [5, 600, 0],
+            31402: [6, 750, 0],
+            31203: [4, 23, 9],
+            21103: [4, 1200, 480],
+            20103: [4, 600, 240],
+            30502: [6, 1500, 0],
+            12202: [6, 450, 0],
+            31803: [5, 750, 0],
+            31903: [5, 750, 0],
+            31603: [5, 750, 0],
+            31703: [5, 750, 0],
+            31503: [5, 750, 0],
+        };
+
+        // Glob state tracking
+        let selectedDiscValue = '';
+        let selectedMainProperty = '';
+
+        function validateForm() {
+            const discSelected = selectedDiscValue !== '';
+            const mainPropSelected = selectedMainProperty !== '';
+
+            let totalLevel = 0;
+            for (let i = 0; i < 4; i++) {
+                const levelEl = document.getElementById(`subLevel${i}`);
+                if (levelEl) {
+                    totalLevel += parseInt(levelEl.textContent) || 0;
+                }
+            }
+            const totalLevelValid = totalLevel === 9 || totalLevel === 8;
+            
+            // all sub prop is sel?
+            let hasSubProperty = true;
+            for (let i = 0; i < 4; i++) {
+                const subProp = document.getElementById(`subProp${i}`);
+                if (!subProp || subProp.value === '') {
+                    hasSubProperty = false;
+                    break;
+                }
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            const isValid = discSelected && mainPropSelected && totalLevelValid && hasSubProperty;
+
+            if (isValid) {
+                generateBtn.disabled = false;
+                generateBtn.classList.remove("bg-gray-500", "cursor-not-allowed");
+                generateBtn.classList.add("bg-blue-600", "hover:bg-blue-700");
+            } else {
+                generateBtn.disabled = true;
+                generateBtn.classList.add("bg-gray-500", "cursor-not-allowed");
+                generateBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
+            }
+        }
+
+        function initializeInterface() {
+            const discSelect = document.getElementById('discSelect');
+            const customSelect = document.createElement('div');
+            customSelect.className = 'relative w-full';
+            
+            const selectButton = document.createElement('button');
+            selectButton.className = 'w-full p-2 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-400 bg-gray-700 text-gray-100 text-left flex items-center justify-between hover:bg-gray-600 transition-colors';
+            selectButton.innerHTML = '<span class="flex items-center"><span>Select Disc</span></span><svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>';
+            
+            const dropdown = document.createElement('div');
+            dropdown.className = 'absolute z-10 w-full bg-gray-700 border border-gray-600 rounded-md mt-1 max-h-60 overflow-y-auto hidden shadow-xl';
+            
+            // Dics info (hidden by default when no dics is sel)
+            const infoSection = document.createElement('div');
+            infoSection.id = 'discInfoSection';
+            infoSection.className = 'hidden flex items-start gap-4 p-4 mt-2 bg-gray-800 rounded-md border border-gray-600';
+            infoSection.style.display = 'none'; // Ensure it's hidden initially
+            
+            // build opts with fragments
+            const fragment = document.createDocumentFragment();
+            const placeholderOption = document.createElement('div');
+            placeholderOption.className = 'p-2 hover:bg-gray-600 cursor-pointer flex items-center text-gray-100';
+            placeholderOption.innerHTML = '<span>Select Disc</span>';
+            placeholderOption.dataset.value = '';
+            fragment.appendChild(placeholderOption);
+
+            // optimize DOM
+            Object.entries(dicsSet).forEach(([disc, id]) => {
+                const option = document.createElement('div');
+                option.className = 'p-2 hover:bg-gray-600 cursor-pointer flex items-center text-gray-100';
+                option.innerHTML = `<img src="${discIcons[disc]}" class="w-5 h-5 mr-2" loading="lazy" alt=""><span>${disc}</span>`;
+                option.dataset.value = disc;
+                option.dataset.id = id;
+                option.dataset.icon = discIcons[disc];
+                fragment.appendChild(option);
+            });
+            
+            dropdown.appendChild(fragment);
+            customSelect.appendChild(selectButton);
+            customSelect.appendChild(dropdown);
+            
+            const container = document.createElement('div');
+            container.appendChild(customSelect);
+            container.appendChild(infoSection);
+            discSelect.parentNode.replaceChild(container, discSelect);
+            
+            // Use single listener vs delegation
+            let isOpen = false;
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.relative') === customSelect) {
+                    if (e.target.closest('button') === selectButton) {
+                        e.stopPropagation();
+                        isOpen = !isOpen;
+                        dropdown.classList.toggle('hidden', !isOpen);
+                    } else if (e.target.closest('[data-value]')) {
+                        const option = e.target.closest('[data-value]');
+                        handleSelection(option, selectButton, infoSection);
+                        isOpen = false;
+                        dropdown.classList.add('hidden');
+                    }
+                } else if (isOpen) {
+                    isOpen = false;
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            createSubPropertyRows();
+            updateMainPropertyOptions();
+            updateSubPropertyOptions();
+            
+            document.getElementById('generateBtn').addEventListener('click', generateDicsConf);
+            document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
+            document.getElementById('slotInput').addEventListener('change', () => {
+                updateMainPropertyOptions();
+                updateSubPropertyOptions();
+                validateForm();
+            });
+            document.getElementById('mainPropertySelect').addEventListener('change', (e) => {
+                selectedMainProperty = e.target.value;
+                updateSubPropertyOptions();
+                validateForm();
+            });
+
+            // Ensure sub prop event listeners are properly added
+            for (let i = 0; i < 4; i++) {
+                const subPropElement = document.getElementById(`subProp${i}`);
+                if (subPropElement) {
+                    subPropElement.addEventListener('change', () => {
+                        updateSubPropertyOptions();
+                        validateForm();
+                    });
+                }
+            }
+            validateForm();
+        }
+
+        let discInfo = {};
+
+        fetch('https://raw.githubusercontent.com/Zebra2711/zebra2711.github.io/master/discInfo.json')
+            .then(res => res.json())
+            .then(data => { discInfo = data; })
+            .catch(err => console.error('Failed to load disc info:', err));
+
+        function handleSelection(option, selectButton, infoSection) {
+            const value = option.dataset.value;
+            const id = option.dataset.id;
+
+            selectedDiscValue = value; // Update global state
+
+            if (!value) {
+                selectButton.innerHTML = `
+                    <span class="flex items-center"><span>Select Disc</span></span>
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                `;
+                infoSection.style.display = 'none';
+                validateForm();
+                return;
+            }
+
+            const icon = option.dataset.icon;
+            const text = option.querySelector('span').textContent;
+
+            selectButton.innerHTML = `
+                <span class="flex items-center">
+                    <img src="${icon}" class="w-5 h-5 mr-2" alt="">
+                    <span>${text}</span>
+                </span>
+                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 9l-7 7-7-7"></path>
+                </svg>
+            `;
+            const infoText = discInfo[id] || 'No information available.';
+
+            // info dics
+            infoSection.style.display = 'flex';
+            infoSection.innerHTML = `
+                <img src="${icon}" alt="${text}" class="w-16 h-16 rounded-md">
+                <div class="flex-1">
+                    <p class="text-sm text-gray-400">ID: ${id}</p>
+                    <pre class="whitespace-pre-wrap text-sm text-gray-300">${infoText}</pre>
+                </div>
+            `;
+
+            selectButton.dispatchEvent(new CustomEvent('change', { 
+                detail: { value, text },
+                bubbles: true 
+            }));
+
+            validateForm();
+        }
+
+        // Update main prop opt based on sel slot
+        function updateMainPropertyOptions() {
+            const slot = parseInt(document.getElementById('slotInput').value);
+            const mainSelect = document.getElementById('mainPropertySelect');
+
+            mainSelect.innerHTML = '';
+            mainSelect.disabled = false;
+            mainSelect.classList.remove('bg-gray-800', 'text-gray-500');
+
+            if (slot === 1) {
+                mainSelect.innerHTML = `<option value="HP">HP</option>`;
+                mainSelect.disabled = true;
+                mainSelect.classList.add('bg-gray-800', 'text-gray-500');
+                selectedMainProperty = 'HP';
+            } 
+            else if (slot === 2) {
+                mainSelect.innerHTML = `<option value="ATK">ATK</option>`;
+                mainSelect.disabled = true;
+                mainSelect.classList.add('bg-gray-800', 'text-gray-500');
+                selectedMainProperty = 'ATK';
+            } 
+            else if (slot === 3) {
+                mainSelect.innerHTML = `<option value="DEF">DEF</option>`;
+                mainSelect.disabled = true;
+                mainSelect.classList.add('bg-gray-800', 'text-gray-500');
+                selectedMainProperty = 'DEF';
+            } 
+            else {
+                mainSelect.innerHTML = '<option value="">Select Main Property</option>';
+                selectedMainProperty = '';
+                Object.entries(dicsPropertyTypeId).forEach(([prop, propId]) => {
+                    const [propSlot, mainBase] = dicsPropertyType[propId];
+                    if (mainBase === 0) return;
+                    if (propSlot === slot || (propSlot === 7 && slot >= 4 && slot <= 6)) {
+                        const option = document.createElement('option');
+                        option.value = prop;
+                        option.textContent = prop;
+                        mainSelect.appendChild(option);
+                    }
+                });
+            }
+            updateSubPropertyOptions();
+        }
+
+        function updateSubPropertyOptions() {
+            const mainProp = selectedMainProperty || null;
+            const subSelects = Array.from({length: 4}, (_, i) => document.getElementById(`subProp${i}`));
+            
+            if (!subSelects.every(select => select)) {
+                console.error('Some sub prop sel are missing');
+                return;
+            }
+
+            subSelects.forEach((subSelect, i) => {
+                const currentValue = subSelect.value;
+                const chosenProps = subSelects
+                    .filter((_, index) => index !== i)
+                    .map(sel => sel.value)
+                    .filter(Boolean);
+                subSelect.innerHTML = '<option value="">Select Property</option>';
+                const fragment = document.createDocumentFragment();
+
+                // add sub prop
+                Object.entries(dicsPropertyTypeId).forEach(([prop, propId]) => {
+                    const [, , subBase] = dicsPropertyType[propId];
+                    
+                    // subBase != 0 , khac main prop va k dc giong voi sub prop khac
+                    if (subBase === 0 || (mainProp && prop === mainProp) || chosenProps.includes(prop)) {
+                        return;
+                    }
+
+                    const opt = document.createElement('option');
+                    opt.value = prop;
+                    opt.textContent = prop;
+                    fragment.appendChild(opt);
+                });
+
+                // Append all opts at once
+                subSelect.appendChild(fragment);
+
+                // Restore prev value if still valid
+                if (currentValue && [...subSelect.options].some(o => o.value === currentValue)) {
+                    subSelect.value = currentValue;
+                }
+            });
+        }
+
+        function createSubPropertyRows() {
+            const container = document.getElementById('subPropertiesContainer');
+            if (!container) {
+                console.error('Sub prop container not found');
+                return;
+            }
+
+            container.innerHTML = '';
+
+            const fragment = document.createDocumentFragment();
+
+            for (let i = 0; i < 4; i++) {
+                const row = document.createElement('div');
+                row.className = 'flex gap-2 mb-2';
+
+                const propSelect = document.createElement('select');
+                propSelect.className = 'flex-1 p-2 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-400 bg-gray-700 text-gray-100';
+                propSelect.id = `subProp${i}`;
+                propSelect.innerHTML = '<option value="">Select Property</option>';
+
+                const levelContainer = document.createElement('div');
+                levelContainer.className = 'flex items-center gap-1';
+
+                const levelDisplay = document.createElement('span');
+                levelDisplay.id = `subLevel${i}`;
+                levelDisplay.textContent = '1';
+                levelDisplay.className = 'w-8 text-center p-2 border border-gray-600 rounded-md bg-gray-700 text-gray-100';
+
+                const minusButton = document.createElement('button');
+                minusButton.textContent = '-';
+                minusButton.className = 'w-8 p-1 bg-gray-600 text-gray-100 rounded-md hover:bg-gray-500 transition-colors';
+                minusButton.addEventListener('click', () => adjustLevel(i, -1));
+
+                const plusButton = document.createElement('button');
+                plusButton.textContent = '+';
+                plusButton.className = 'w-8 p-1 bg-gray-600 text-gray-100 rounded-md hover:bg-gray-500 transition-colors';
+                plusButton.addEventListener('click', () => adjustLevel(i, 1));
+
+                levelContainer.append(minusButton, levelDisplay, plusButton);
+                row.append(propSelect, levelContainer);
+                fragment.appendChild(row);
+            }
+
+            container.appendChild(fragment);
+            
+            // Init opts after DOM is ready
+            requestAnimationFrame(() => {
+                updateSubPropertyOptions();
+                updateTotalLevel();
+            });
+        }
+
+        function adjustLevel(index, change) {
+            const levelDisplay = document.getElementById(`subLevel${index}`);
+            let level = parseInt(levelDisplay.textContent);
+            const newLevel = Math.max(1, Math.min(6, level + change));
+
+            let total = 0;
+            for (let i = 0; i < 4; i++) {
+                total += parseInt(document.getElementById(`subLevel${i}`).textContent);
+            }
+            total += change;
+
+            // max sub = 9 thoi, up nhieu no loi
+            if (total <= 9) {
+                levelDisplay.textContent = newLevel;
+                updateTotalLevel();
+            }
+        }
+
+        function updateTotalLevel() {
+            let total = 0;
+            for (let i = 0; i < 4; i++) {
+                const levelEl = document.getElementById(`subLevel${i}`);
+                if (levelEl) total += parseInt(levelEl.textContent);
+            }
+            const totalLevelEl = document.getElementById('totalLevel');
+            totalLevelEl.textContent = total;
+            if (total === 9) totalLevelEl.textContent += " (MAX)";
+            
+            validateForm();
+        }
+
+        // Create dics
+        function generateDicsConf() {
+            const mainProperty = selectedMainProperty;
+
+            if (!selectedDiscValue || !mainProperty) {
+                document.getElementById('outputText').value = 'Please select disc and main property';
+                return;
+            }
+
+            const slot = parseInt(document.getElementById('slotInput').value) || 1;
+
+            try {
+                const mainPropertyTypeId = dicsPropertyTypeId[mainProperty];
+                const finalId = String(dicsSet[selectedDiscValue]) + "4" + String(slot);
+                const mainBase = dicsPropertyType[mainPropertyTypeId][1];
+
+                let strOut = `.{
+            .id = ${finalId}, // ${selectedDiscValue} [${slot}]
+            .level = 15,
+            .star = 1,
+            .properties = .{
+                .{ ${mainPropertyTypeId}, ${mainBase}, 0 }, // ${mainProperty}
+            },
+            .sub_properties = .{`;
+
+                for (let i = 0; i < 4; i++) {
+                    const subProp = document.getElementById(`subProp${i}`).value;
+                    const level = parseInt(document.getElementById(`subLevel${i}`).textContent) || 1;
+
+                    if (subProp) {
+                        const subPropTypeId = dicsPropertyTypeId[subProp];
+                        const subBase = dicsPropertyType[subPropTypeId][2];
+                        strOut += `\n                .{ ${subPropTypeId}, ${subBase}, ${level} }, // ${subProp}`;
+                    }
+                }
+
+                strOut += `
+            },
+        },`;
+
+                document.getElementById('outputText').value = strOut;
+                document.getElementById('copyBtn').style.display = 'block';
+            } catch (error) {
+                document.getElementById('outputText').value = `Error generating output: ${error.message}`;
+            }
+        }
+
+        function copyToClipboard() {
+            const outputText = document.getElementById('outputText');
+            outputText.select();
+            outputText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(outputText.value).then(() => {
+                const copyBtn = document.getElementById('copyBtn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                copyBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                copyBtn.classList.add('bg-green-800');
+
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.remove('bg-green-800');
+                    copyBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                }, 2000);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeInterface);
+    </script>
 </body>
-
 </html>
