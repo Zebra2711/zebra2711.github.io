@@ -1,0 +1,76 @@
+.container { 
+    max-width: 1200px; 
+}
+
+.disc-select-option {
+    display: flex;
+    align-items: center;
+    padding: 4px;
+}
+
+.disc-select-option img {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+#discInfoSection {
+    display: flex;
+    align-items: start;
+    gap: 1rem;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    background-color: #1f2937;
+    border-radius: 0.5rem;
+    border: 1px solid #374151;
+}
+
+#discInfoSection img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
+/* scrollbar dark theme */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+.custom-dropdown {
+  position: relative;
+  width: 200px; /* Adjust as needed */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.custom-dropdown > div {
+  display: none; /* Hide options by default */
+}
+
+.custom-dropdown:hover > div {
+  display: block; /* Show options on hover */
+  position: absolute;
+  background: #fff;
+  width: 100%;
+  border: 1px solid #ccc;
+  z-index: 10;
+}
+
+.custom-dropdown > div:first-child {
+  display: flex; /* Always show the selected/default option */
+  padding: 8px;
+}
